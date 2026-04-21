@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: cism-backend
+    runtime: docker
+    envVars:
+      - key: SERVER_PORT
+        value: 8080
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_URL
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_ENDPOINT
+        sync: false
+      - key: DB_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false
