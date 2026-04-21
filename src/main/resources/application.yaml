@@ -1,0 +1,26 @@
+spring:
+  devtools:
+    restart:
+      enabled: true
+      poll-interval: 1s
+      quiet-period: 400ms
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    endpoint: ${DB_ENDPOINT}
+    key: ${DB_KEY}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  app:
+    cors:
+      allowed-origins: ${FRONTEND_URL}
+      allowed-methods: GET, POST, PUT, DELETE, OPTIONS
+      allowed-headers: Content-Type, Authorization
+      allow-credentials: true

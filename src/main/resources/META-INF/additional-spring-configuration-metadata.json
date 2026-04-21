@@ -1,0 +1,92 @@
+{"properties": [
+  {
+    "name": "spring.datasource.url",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.url'"
+  },
+  {
+    "name": "spring.datasource.username",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.username'"
+  },
+  {
+    "name": "spring.datasource.password",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.password'"
+  },
+  {
+    "name": "supabase.url",
+    "type": "java.lang.String",
+    "description": "A description for 'supabase.url'"
+  },
+  {
+    "name": "supabase.key",
+    "type": "java.lang.String",
+    "description": "A description for 'supabase.key'"
+  },
+  {
+    "name": "app.cors.allowed-origins",
+    "type": "java.lang.String",
+    "description": "A description for 'app.cors.allowed-origins'"
+  },
+  {
+    "name": "app.cors.allowed-methods",
+    "type": "java.lang.String",
+    "description": "A description for 'app.cors.allowed-methods'"
+  },
+  {
+    "name": "app.cors.allowed-headers",
+    "type": "java.lang.String",
+    "description": "A description for 'app.cors.allowed-headers'"
+  },
+  {
+    "name": "app.cors.allow-credentials",
+    "type": "java.lang.String",
+    "description": "A description for 'app.cors.allow-credentials'"
+  },
+  {
+    "name": "jwt.secret",
+    "type": "java.lang.String",
+    "description": "A description for 'jwt.secret'"
+  },
+  {
+    "name": "spring.datasource.endpoint",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.endpoint'"
+  },
+  {
+    "name": "spring.datasource.key",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.key'"
+  },
+  {
+    "name": "spring.app.cors.allowed-origins",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.app.cors.allowed-origins'"
+  },
+  {
+    "name": "spring.datasource.key",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.key'"
+  },
+  {
+    "name": "spring.datasource.endpoint",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.datasource.endpoint'"
+  },
+  {
+    "name": "spring.app.cors.allowed-methods",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.app.cors.allowed-methods'"
+  },
+  {
+    "name": "spring.app.cors.allowed-headers",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.app.cors.allowed-headers'"
+  },
+  {
+    "name": "spring.app.cors.allow-credentials",
+    "type": "java.lang.String",
+    "description": "A description for 'spring.app.cors.allow-credentials'"
+  }
+]}
