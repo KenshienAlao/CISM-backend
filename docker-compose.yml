@@ -13,7 +13,3 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       FRONTEND_URL: ${FRONTEND_URL}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-
-    volumes:
-      - .:/app
-      - ~/.m2:/root/.m2
