@@ -19,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Cookie;
 import com.cism.backend.util.CookieUtil;
 import com.cism.backend.config.JwtTokenProvider;
 
@@ -86,5 +88,26 @@ public class AuthController {
     public ResponseEntity <Api<String>> updateAvatar(@RequestParam("file") MultipartFile file) throws IOException {
         String avatarUrl = authService.updateAvatarService(file);
         return ResponseEntity.ok(Api.ok("Avatar updated", "AVATAR_UPDATED", avatarUrl));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<Api<LoginDto>> refresh(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("refresh_token".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        LoginDto success = authService.refreshAccessTokenService(refreshToken);
+
+        cookieUtil.addCookie(response, "access_token", success.accessToken(), tokenProvider.getJwtExpirationInMs());
+        cookieUtil.addCookie(response, "refresh_token", success.refreshToken(), tokenProvider.getRefreshTokenExpirationInMs());
+
+        return ResponseEntity.ok(Api.ok("Token refreshed", "TOKEN_REFRESH_SUCCESS", success));
     }
  }

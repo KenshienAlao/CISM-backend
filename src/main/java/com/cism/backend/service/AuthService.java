@@ -140,6 +140,21 @@ public class AuthService {
         return avatarUrl;
     }
 
+    public LoginDto refreshAccessTokenService(String refreshToken) {
+        if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
+            throw new BadrequestException("Invalid refresh token", "INVALID_REFRESH_TOKEN");
+        }
+
+        String email = jwtTokenProvider.getUsernameFromJWT(refreshToken);
+        AuthModel user = registerRepository.findByEmail(email)
+                .orElseThrow(() -> new BadrequestException("User not found", "USER_NOT_FOUND"));
+
+        String newAccessToken = jwtTokenProvider.generateToken(user.getEmail());
+        String newRefreshToken = jwtTokenProvider.generateRefreshToken(user.getEmail());
+
+        return new LoginDto(email, null, newAccessToken, newRefreshToken, user);
+    }
+
 
 
     public boolean isBlank(String entity){
