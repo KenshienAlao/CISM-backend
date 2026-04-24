@@ -26,6 +26,14 @@ public class JwtTokenProvider {
     @Value("${app.jwt.refresh-expiration-ms}")
     private long refreshTokenExpirationInMs;
 
+    public long getJwtExpirationInMs() {
+        return jwtExpirationInMs;
+    }
+
+    public long getRefreshTokenExpirationInMs() {
+        return refreshTokenExpirationInMs;
+    }
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }

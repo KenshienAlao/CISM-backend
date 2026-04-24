@@ -1,9 +1,15 @@
 package com.cism.backend.service;
 
 import com.cism.backend.repository.RegisterRepository;
+
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.cism.backend.dto.LoginDto;
 import com.cism.backend.dto.RegisterDto;
@@ -28,6 +34,9 @@ public class AuthService {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    @Autowired
+    private FileStorageService fileStorageService;
+
     AuthService(RegisterRepository registerRepository, OtpService otpService, JwtTokenProvider jwtTokenProvider) {
         this.registerRepository = registerRepository;
         this.otpService = otpService;
@@ -44,7 +53,7 @@ public class AuthService {
         String password = entity.password();
         String otp = entity.otp();
 
-        if (isBlank(email) || isBlank(studentId) || isBlank(username) || isBlank(password) || isBlank(otp)) {
+        if (isBlank(email) || isBlank(username) || isBlank(password) || isBlank(otp)) {
             throw new BadrequestException("All fields and OTP are required", "ALL_FIELDS_REQUIRED");
         }
 
@@ -96,6 +105,42 @@ public class AuthService {
 
         return new LoginDto(email, password, accessToken, refreshToken, user);
     }
+
+    public void deleteAccountService() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof AuthModel)) {
+            throw new BadrequestException("User not authenticated", "UNAUTHENTICATED");
+        }
+
+        AuthModel user = (AuthModel) authentication.getPrincipal();
+        registerRepository.delete(user);
+    }
+
+    public AuthModel validateCookieService() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated() || !(authentication.getPrincipal() instanceof AuthModel)) {
+            return null;
+        }
+
+        return (AuthModel) authentication.getPrincipal();
+    }
+
+    public String updateAvatarService(MultipartFile file)  throws IOException {
+        AuthModel user = (AuthModel) SecurityContextHolder
+            .getContext()
+            .getAuthentication()
+            .getPrincipal();
+
+        String avatarUrl = fileStorageService.store(file, String.valueOf(user.getId()));
+
+        user.setAvatar(avatarUrl);
+        registerRepository.save(user);
+
+        return avatarUrl;
+    }
+
+
 
     public boolean isBlank(String entity){
         return entity == null || entity.isBlank();

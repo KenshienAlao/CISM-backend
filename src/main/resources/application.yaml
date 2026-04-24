@@ -24,10 +24,15 @@ resend:
 app:
   cors:
     allowed-origins: ${FRONTEND_URL}
-    allowed-methods: GET, POST, PUT, DELETE, OPTIONS
+    allowed-methods: GET, POST, PUT, PATCH, DELETE, OPTIONS
     allowed-headers: Content-Type, Authorization
     allow-credentials: true
   jwt:
     secret: ${JWT_SECRET}
     expiration-ms: 3600000 # 1 hour
     refresh-expiration-ms: 604800000 # 7 days
+
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
