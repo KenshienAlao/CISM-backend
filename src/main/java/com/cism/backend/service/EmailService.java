@@ -3,33 +3,39 @@ package com.cism.backend.service;
 import com.cism.backend.dto.OtpDto;
 import com.cism.backend.exception.BadrequestException;
 
-import com.resend.Resend;
-import com.resend.services.emails.model.CreateEmailOptions;
-import com.resend.services.emails.model.CreateEmailResponse;
+import jakarta.mail.internet.MimeMessage;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
 
-    private final Resend resend;
+    @Autowired
+    private JavaMailSender mailSender;
 
-    public EmailService(@Value("${resend.api-key}") String apiKey) {
-        this.resend = new Resend(apiKey);
-    }
+    @Value("${spring.mail.username}")
+    private String fromEmail;
 
     public OtpDto sendOtpEmail(String to, String otp) throws Exception {
-        CreateEmailOptions params = CreateEmailOptions.builder()
-                .from("onboarding@resend.dev") 
-                .to(to)
-                .subject("OTP Verification")
-                .html("<p>Your verification code is: <strong>" + otp + "</strong></p>")
-                .build();
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        CreateEmailResponse response = resend.emails().send(params);
+            helper.setFrom(fromEmail);
+            helper.setTo(to);
+            helper.setSubject("OTP Verification");
+            helper.setText("<p>Your verification code is: <strong>" + otp + "</strong></p>", true);
 
-        if (response == null || response.getId() == null) throw new BadrequestException("Failed to send OTP", "OTP_FAILED");
+            mailSender.send(message);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BadrequestException("Failed to send OTP: " + e.getMessage(), "OTP_FAILED");
+        }
+
         return new OtpDto(to, otp);
     }
 }

@@ -104,11 +104,10 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- resend -->
+		<!-- spring mail -->
 		<dependency>
-			<groupId>com.resend</groupId>
-			<artifactId>resend-java</artifactId>
-			<version>3.1.0</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
 
 		<!-- cloudinary -->

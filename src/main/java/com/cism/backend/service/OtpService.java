@@ -70,15 +70,26 @@ public class OtpService {
 
     @Transactional
     public OtpDto verifyOtp(String email, String codeFromUser) throws Exception {
-        OtpModel stored = otpRepository.findByEmail(email).orElseThrow(() -> new BadrequestException("OTP not found", "OTP_NOT_FOUND"));
+        System.out.println("Attempting to verify OTP. Provided Email: '" + email + "', Provided Code: '" + codeFromUser + "'");
+        OtpModel stored = otpRepository.findByEmail(email).orElseThrow(() -> {
+            System.out.println("Verification Failed: OTP_NOT_FOUND for email " + email);
+            return new BadrequestException("OTP not found", "OTP_NOT_FOUND");
+        });
 
         if (stored.getCreateAt().plus(Duration.ofMinutes(COOLDOW_MINUTES)).isBefore(Instant.now())) {
             otpRepository.delete(stored);
             otpRepository.flush();
+            System.out.println("Verification Failed: OTP_EXPIRED for email " + email);
             throw new BadrequestException("OTP expired", "OTP_EXPIRED");
         }
 
-        if (!stored.getOtp().equals(codeFromUser)) throw new BadrequestException("OTP not match", "OTP_NOT_MATCH");
+        System.out.println("Stored Code: '" + stored.getOtp() + "'");
+        if (!stored.getOtp().equals(codeFromUser)) {
+            System.out.println("Verification Failed: OTP_NOT_MATCH. Expected " + stored.getOtp() + ", got " + codeFromUser);
+            throw new BadrequestException("OTP not match", "OTP_NOT_MATCH");
+        }
+        
+        System.out.println("OTP Verified Successfully! Deleting OTP from db...");
         otpRepository.delete(stored);
         otpRepository.flush();
         return new OtpDto(email, codeFromUser);

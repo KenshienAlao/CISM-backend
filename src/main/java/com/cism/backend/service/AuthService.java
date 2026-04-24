@@ -48,7 +48,7 @@ public class AuthService {
     public RegisterDto registerService(RegisterDto entity) throws Exception {
 
         String email = entity.email();
-        String studentId = entity.studentId();
+        String studentId = isBlank(entity.studentId()) ? null : entity.studentId();
         String username = entity.username();
         String password = entity.password();
         String otp = entity.otp();
