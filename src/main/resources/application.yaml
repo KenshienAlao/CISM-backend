@@ -30,6 +30,9 @@ spring:
           starttls:
             enable: true
 
+apilayer:
+  api-key: ${EMAIL_API_KEY}
+
 app:
   cors:
     allowed-origins: ${FRONTEND_URL}

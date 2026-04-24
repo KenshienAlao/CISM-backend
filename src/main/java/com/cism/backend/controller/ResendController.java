@@ -1,5 +1,6 @@
 package com.cism.backend.controller;
 
+import com.cism.backend.repository.RegisterRepository;
 import java.util.Random;
 
 
@@ -9,7 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cism.backend.dto.OtpDto;
 import com.cism.backend.dto.common.Api;
 import com.cism.backend.service.EmailService;
+import com.cism.backend.service.EmailValidationService;
 import com.cism.backend.service.OtpService;
+import com.cism.backend.exception.BadrequestException;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -22,19 +25,35 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/api/resend")
 public class ResendController {
 
+    private final RegisterRepository registerRepository;
     private final EmailService emailService;
     private final OtpService otpService;
+    private final EmailValidationService emailValidationService;
 
-
-    public ResendController(EmailService emailService, OtpService otpService) {
+    public ResendController(EmailService emailService, OtpService otpService, EmailValidationService emailValidationService, RegisterRepository registerRepository) {
         this.emailService = emailService;
         this.otpService = otpService;
+        this.emailValidationService = emailValidationService;
+        this.registerRepository = registerRepository;
     }
 
     @PostMapping("/send-otp")
     public ResponseEntity<Api<OtpDto>> sendOtp(@RequestBody OtpDto entity, HttpServletRequest request) throws Exception {
         String email = entity.email();
         String ipAddress = request.getRemoteAddr();
+
+        if (email == null || email.trim().isEmpty()) {
+            throw new BadrequestException("Email address is required.", "EMAIL_REQUIRED");
+        }
+
+        if (registerRepository.findByEmail(email).isPresent()) {
+            throw new BadrequestException("Email address already exists.", "EMAIL_EXIST");
+        }
+
+        if (!emailValidationService.validateEmail(email, ipAddress)) {
+            throw new BadrequestException("Email address doesn't exist or is invalid.", "INVALID_EMAIL");
+        }
+
         String otp = String.format("%06d", new Random().nextInt(1000000));
         otpService.storeOtp(email, otp, ipAddress);
 

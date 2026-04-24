@@ -16,4 +16,8 @@ public interface OtpRepository extends JpaRepository<OtpModel, Long> {
     @Transactional
     void deleteByEmail(String email);
     long countByIpAddressAndCreateAtAfter(String ipAddress, Instant createAt);
+
+    @Modifying
+    @Transactional
+    void deleteByCreateAtBefore(Instant cutoff);
 }

@@ -148,5 +148,10 @@
     "name": "cloudinary.api-secret",
     "type": "java.lang.String",
     "description": "A description for 'cloudinary.api-secret'"
+  },
+  {
+    "name": "apilayer.api-key",
+    "type": "java.lang.String",
+    "description": "A description for 'apilayer.api-key'"
   }
 ]}

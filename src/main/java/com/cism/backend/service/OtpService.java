@@ -5,6 +5,9 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,8 +15,10 @@ import com.cism.backend.dto.OtpDto;
 import com.cism.backend.exception.BadrequestException;
 import com.cism.backend.model.OtpModel;
 import com.cism.backend.repository.OtpRepository;
+import lombok.extern.slf4j.Slf4j;
 
 
+@Slf4j
 @Service
 public class OtpService {
 
@@ -53,7 +58,7 @@ public class OtpService {
                 );
             }
             otpRepository.delete(existing.get());
-            otpRepository.flush(); // Ensure the old OTP is deleted before saving a new one with the same email
+            otpRepository.flush();
         }
 
         OtpModel newEntry = OtpModel.builder()
@@ -93,6 +98,23 @@ public class OtpService {
         otpRepository.delete(stored);
         otpRepository.flush();
         return new OtpDto(email, codeFromUser);
+    }
+
+    // Runs every 5 minutes — deletes all OTPs that are older than 5 minutes (expired)
+    @Scheduled(fixedRate = 5 * 60 * 1000)
+    @Transactional
+    public void cleanupExpiredOtps() {
+        Instant cutoff = Instant.now().minus(Duration.ofMinutes(COOLDOW_MINUTES));
+        otpRepository.deleteByCreateAtBefore(cutoff);
+        log.info("Scheduled OTP cleanup complete — removed entries older than {} minutes.", COOLDOW_MINUTES);
+    }
+
+    // Runs on server startup — clears ALL pending OTPs so users must re-request after a restart
+    @EventListener(ApplicationReadyEvent.class)
+    @Transactional
+    public void clearAllOtpsOnStartup() {
+        otpRepository.deleteAll();
+        log.info("Server started: all pending OTPs have been invalidated.");
     }
 
 }
