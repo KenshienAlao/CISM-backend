@@ -1,4 +1,4 @@
-package com.cism.backend.model.stalls;
+package com.cism.backend.model.admin;
 
 import java.time.Instant;
 
@@ -11,8 +11,15 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Table;
 import java.util.List;
+
+import org.hibernate.annotations.CreationTimestamp;
+
+import com.cism.backend.model.stalls.StallDrinksModel;
+import com.cism.backend.model.stalls.StallIncomesModel;
+import com.cism.backend.model.stalls.StallMealsModel;
+import com.cism.backend.model.stalls.StallSnacksModel;
+import com.cism.backend.model.stalls.StallUsersModel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -41,19 +48,17 @@ public class StallModel {
     @JsonIgnore
     private List<StallSnacksModel> snackList;
 
-    @Column(unique = true, nullable = false)
-    @NotBlank(message = "Stall name is required") private String name;
- 
-    @Column(unique = false, nullable = true) private String description;
+    @OneToMany(mappedBy = "stall", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<StallUsersModel> userList;
 
-    @Column(unique = false, nullable = true) private String logo;
+    @OneToMany(mappedBy = "stall", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<StallIncomesModel> incomeList;
 
-    @Column(unique = false, nullable = false) private String status;
-
-    @Column(unique = false, nullable = false) private String openAt;
-
-    @Column(unique = false, nullable = false) private String closeAt;
-
-    @Column(nullable = false) private Instant createdAt;
+    @Column(unique = true, nullable = false) private String licence;
+    @Column(unique = true, nullable = false) private String password;
+    
+    @Column(nullable = false) @CreationTimestamp private Instant createdAt;
     
 }

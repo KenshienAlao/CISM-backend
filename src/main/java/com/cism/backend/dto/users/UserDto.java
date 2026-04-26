@@ -6,7 +6,7 @@ public record UserDto(
     String username,
     String avatar,
     String password,
-    String role
+    boolean status
 ) {
     
 }

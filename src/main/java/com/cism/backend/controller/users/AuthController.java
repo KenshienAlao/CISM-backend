@@ -41,7 +41,7 @@ public class AuthController {
         this.cookieUtil = cookieUtil;
         this.tokenProvider = tokenProvider;
     }
-
+    
     @PostMapping("/register")
     public ResponseEntity<Api<RegisterDto>> register(@RequestBody RegisterDto entity) throws Exception {  
         RegisterDto success = authService.registerService(entity);

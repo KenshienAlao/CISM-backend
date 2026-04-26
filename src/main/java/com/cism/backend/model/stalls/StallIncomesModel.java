@@ -1,5 +1,6 @@
 package com.cism.backend.model.stalls;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import com.cism.backend.model.admin.StallModel;
@@ -25,9 +26,9 @@ import org.hibernate.annotations.OnDeleteAction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "stall_drinks")
-public class StallDrinksModel {
-    
+@Table(name = "stall_incomes")
+public class StallIncomesModel {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) private long id;
 
@@ -35,16 +36,13 @@ public class StallDrinksModel {
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "stall_id", nullable = false) private StallModel stall;
 
-    @Column(unique = false, nullable = false) private String name;
+    @Column(unique = false, nullable = false) private BigDecimal income;
 
-    @Column(unique = false, nullable = false) private String price;
-
-    @Column(unique = false, nullable = false) private String stocks;
-
-    @Column(unique = false, nullable = false) private String image;
+    @Column(unique = false, nullable = false) private Instant earnedAt;
 
     @Column(unique = false, nullable = false) private Instant createdAt;
 
-    @Column(unique = false, nullable = false) private Instant updatedAt;
-
 }
+
+
+// fetch the info of the stall 

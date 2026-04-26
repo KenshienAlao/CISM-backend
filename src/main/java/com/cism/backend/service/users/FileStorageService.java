@@ -28,4 +28,18 @@ public class FileStorageService {
         );
         return (String) result.get("secure_url");
     }
+
+    public String stallImage(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) return null;
+        
+        Map<?, ?> result = cloudinary.uploader().upload(
+            file.getBytes(),
+            ObjectUtils.asMap(
+                "public_id",  "stalls",
+                "overwrite",  true,
+                "folder",     "stalls"
+            )
+        );
+        return (String) result.get("secure_url");   
+    }
 }

@@ -2,6 +2,8 @@ package com.cism.backend.model.stalls;
 
 import java.time.Instant;
 
+import com.cism.backend.model.admin.StallModel;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,6 +17,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -27,6 +32,7 @@ public class StallSnacksModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY) private long id;
 
     @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "stall_id", nullable = false) private StallModel stall;
 
     @Column(unique = false, nullable = false) private String name;
