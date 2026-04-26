@@ -18,7 +18,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import com.cism.backend.model.admin.StallModel;
 import com.cism.backend.dto.admin.StallResponseDto;
+import com.cism.backend.dto.admin.StallUserResponse;
+
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 
 @RestController
@@ -49,6 +54,14 @@ public class StallsController {
         List<StallListResponse> stallList = createStallService.getAllStalls();
 
         return ResponseEntity.ok(Api.ok("Stalls fetched", "STALLS_FETCHED", stallList));
+    }
+
+    @PutMapping("/update-stall/{id}")
+    public ResponseEntity<Api<StallUserResponse>> updateStall(@PathVariable Long id, @ModelAttribute CreateUserDto entity) {
+            
+        StallUserResponse success = createStallService.updateUserStall(id, entity);
+        
+        return ResponseEntity.ok(Api.ok("Stall updated", "STALL_UPDATED", success));
     }
     
 }   

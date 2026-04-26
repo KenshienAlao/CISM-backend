@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.cism.backend.dto.admin.CreateUserDto;
 import com.cism.backend.dto.admin.StallListResponse;
+import com.cism.backend.dto.admin.StallUserResponse;
 import com.cism.backend.exception.BadrequestException;
 import com.cism.backend.model.admin.StallModel;
 import com.cism.backend.model.stalls.StallIncomesModel;
@@ -130,6 +131,49 @@ public class CreateStallService {
         }).toList();
     }
 
+
+    @Transactional
+    public StallUserResponse updateUserStall(Long id, CreateUserDto entity) {
+        StallModel stall = createStallRepository.findById(id.intValue())
+            .orElseThrow(() -> new BadrequestException("Stall not found", "STALL_NOT_FOUND"));
+
+        StallUsersModel user = stall.getUserList().stream().findFirst()
+            .orElseThrow(() -> new BadrequestException("Stall user details not found", "USER_NOT_FOUND"));
+
+        if (!isBlank(entity.name())) {
+            user.setName(entity.name());
+        }
+        if (!isBlank(entity.description())) {
+            user.setDescription(entity.description());
+        }
+        if (!isBlank(entity.openAt())) {
+            user.setOpenAt(entity.openAt());
+        }
+        if (!isBlank(entity.closeAt())) {
+            user.setCloseAt(entity.closeAt());
+        }
+
+        if (!isBlankMultipartFile(entity.image())) {
+            try {
+                String stallImage = fileStorageService.stallImage(entity.image());
+                user.setImage(stallImage);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to upload image", e);
+            }
+        }
+
+        createStallUsersRepository.save(user);
+
+        return new StallUserResponse(
+            user.getId(),
+            stall.getId(),
+            user.getName(),
+            user.getDescription(),
+            user.getImage(),
+            user.getOpenAt(),
+            user.getCloseAt()
+        );
+    }
 
 
     public boolean isBlank(String entity){
