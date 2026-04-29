@@ -16,6 +16,7 @@ import com.cism.backend.service.users.OtpService;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,17 +26,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/api/resend")
 public class ResendController {
 
-    private final RegisterRepository registerRepository;
-    private final EmailService emailService;
-    private final OtpService otpService;
-    private final EmailValidationService emailValidationService;
-
-    public ResendController(EmailService emailService, OtpService otpService, EmailValidationService emailValidationService, RegisterRepository registerRepository) {
-        this.emailService = emailService;
-        this.otpService = otpService;
-        this.emailValidationService = emailValidationService;
-        this.registerRepository = registerRepository;
-    }
+    @Autowired
+    private RegisterRepository registerRepository;
+    
+    @Autowired
+    private EmailService emailService;
+    
+    @Autowired
+    private OtpService otpService;
+    
+    @Autowired
+    private EmailValidationService emailValidationService;
 
     @PostMapping("/send-otp")
     public ResponseEntity<Api<OtpDto>> sendOtp(@RequestBody OtpDto entity, HttpServletRequest request) throws Exception {

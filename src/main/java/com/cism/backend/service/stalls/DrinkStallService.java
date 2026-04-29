@@ -8,101 +8,106 @@ import org.springframework.stereotype.Service;
 import com.cism.backend.dto.stall.RequestItemDto;
 import com.cism.backend.dto.stall.ResponseItemDto;
 import com.cism.backend.exception.BadrequestException;
+import com.cism.backend.exception.UnauthorizedException;
 import com.cism.backend.model.admin.StallModel;
-import com.cism.backend.model.stalls.StallMealsModel;
+import com.cism.backend.model.stalls.StallDrinksModel;
 import com.cism.backend.repository.admin.CreateStallRepository;
-import com.cism.backend.repository.stalls.StallMealsRepository;
+import com.cism.backend.repository.stalls.StallDrinksRepository;
 import com.cism.backend.util.CurrentUserLicence;
 import com.cism.backend.util.IsBlack;
 
 import jakarta.transaction.Transactional;
 
 @Service
-public class MealStallService {
-    
+public class DrinkStallService {
+    @Autowired
+    private CurrentUserLicence currentUserLicence;
+
     @Autowired
     private CreateStallRepository createStallRepository;
 
     @Autowired
-    private StallMealsRepository stallMealsRepository;
-
-    @Autowired
-    private CurrentUserLicence currentUserLicence;
+    private StallDrinksRepository stallDrinksRepository;
 
     @Autowired
     private IsBlack isBlack;
 
     @Transactional
-    public ResponseItemDto createNewMealService(RequestItemDto entity) {
+    public ResponseItemDto createNewDrinkService(RequestItemDto entity) throws Exception {
         String licence = currentUserLicence.getCurrentUserLicence();
         StallModel stall = createStallRepository.findByLicence(licence).orElseThrow(() -> new BadrequestException("Stall not found", "STALL_NOT_FOUND"));
         
 
-       if (isBlack.isBlank(entity.name()) || isBlack.isBlankBigDecimal(entity.price())) {
+        if (isBlack.isBlank(entity.name()) || isBlack.isBlankBigDecimal(entity.price())) {
             throw new BadrequestException("Please fill in all the fields", "FILL_ALL_FIELDS");
-       }
+        }
 
-        StallMealsModel meal = StallMealsModel.builder()
+        StallDrinksModel drink = StallDrinksModel.builder()
             .stall(stall)
             .name(entity.name())
             .price(entity.price())
-            .image(entity.image())
             .stocks(entity.stocks())
+            .image(entity.image())
             .sold(0)
             .previousSold(0)
             .createdAt(Instant.now())
             .updatedAt(Instant.now())
             .build();
 
-         StallMealsModel savedMeal = stallMealsRepository.save(meal);
 
-        return mapToResponseDto(savedMeal);
+        StallDrinksModel savedDrink = stallDrinksRepository.save(drink);
+
+        return mapToResponseDto(savedDrink);
     }
 
     @Transactional
-    public ResponseItemDto updateMealService(Long id, RequestItemDto entity) throws Exception {
-        StallMealsModel meal = helperByIdAndEntity(id, entity);
+    public ResponseItemDto updateDrinkService(Long id, RequestItemDto entity) throws Exception {
+        StallDrinksModel drink = helperByIdAndEntity(id, entity);
 
-        meal.setName(entity.name());
-        meal.setPrice(entity.price());
-        meal.setImage(entity.image());
-        meal.setStocks(entity.stocks());
-        meal.setUpdatedAt(Instant.now());
+        drink.setName(entity.name());
+        drink.setPrice(entity.price());
+        drink.setStocks(entity.stocks());
+        drink.setImage(entity.image());
+        drink.setUpdatedAt(Instant.now());
 
-        StallMealsModel updatedMeal = stallMealsRepository.save(meal);
+        StallDrinksModel updatedDrink = stallDrinksRepository.save(drink);
 
-        return mapToResponseDto(updatedMeal);
+        return mapToResponseDto(updatedDrink);
     }
 
     @Transactional
-    public ResponseItemDto deleteMealService(Long id) throws Exception {
-        StallMealsModel meal = helperById(id);
-        stallMealsRepository.deleteById(id);
-        return mapToResponseDto(meal);
+    public ResponseItemDto deleteDrinkService(Long id) throws Exception {
+        StallDrinksModel drink = helperById(id);
+        stallDrinksRepository.delete(drink);
+        return mapToResponseDto(drink);
     }
 
 
-    private StallMealsModel helperById(Long id) throws Exception {
+
+
+    private StallDrinksModel helperById(Long id) throws Exception {
         String licence = currentUserLicence.getCurrentUserLicence();
         StallModel stall = createStallRepository.findByLicence(licence).orElseThrow(() -> new BadrequestException("Stall not found", "STALL_NOT_FOUND"));
-        StallMealsModel meal = stallMealsRepository.findById(id).orElseThrow(() -> new BadrequestException("Meal not found", "MEAL_NOT_FOUND"));
-        
-        if (meal.getStall().getId() != stall.getId()) {
-            throw new BadrequestException("You do not have permission to update this meal", "UNAUTHORIZED");
+        StallDrinksModel drink = stallDrinksRepository.findById(id).orElseThrow(() -> new BadrequestException("Drink not found", "DRINK_NOT_FOUND"));
+
+        if (stall.getId() != drink.getStall().getId()) {
+            throw new UnauthorizedException("You are not authorized", "UNAUTHORIZED");
         }
-        return meal;
+
+        return drink;
     }
 
-    private StallMealsModel helperByIdAndEntity(Long id, RequestItemDto entity) throws Exception {
-        StallMealsModel meal = helperById(id);
+    private StallDrinksModel helperByIdAndEntity(Long id, RequestItemDto entity) throws Exception {
+        StallDrinksModel drink = helperById(id);
 
         if (isBlack.isBlank(entity.name()) || isBlack.isBlankBigDecimal(entity.price())) {
             throw new BadrequestException("Please fill in all the fields", "FILL_ALL_FIELDS");
         }
-        return meal;
+
+        return drink;
     }
 
-    private ResponseItemDto mapToResponseDto(StallMealsModel entity) {
+    private ResponseItemDto mapToResponseDto(StallDrinksModel entity) {
         return new ResponseItemDto(
             entity.getId(),
             entity.getStall().getId(),

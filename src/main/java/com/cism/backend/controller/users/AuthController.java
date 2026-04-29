@@ -13,6 +13,7 @@ import com.cism.backend.service.users.AuthService;
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,16 +33,16 @@ import org.springframework.web.bind.annotation.PatchMapping;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    private final AuthService authService;
-    private final CookieUtil cookieUtil;
-    private final JwtTokenProvider tokenProvider;
 
-    public AuthController(AuthService authService, CookieUtil cookieUtil, JwtTokenProvider tokenProvider){
-        this.authService = authService;
-        this.cookieUtil = cookieUtil;
-        this.tokenProvider = tokenProvider;
-    }
+    @Autowired
+    private AuthService authService;
     
+    @Autowired
+    private CookieUtil cookieUtil;
+    
+    @Autowired
+    private JwtTokenProvider tokenProvider;
+
     @PostMapping("/register")
     public ResponseEntity<Api<RegisterDto>> register(@RequestBody RegisterDto entity) throws Exception {  
         RegisterDto success = authService.registerService(entity);

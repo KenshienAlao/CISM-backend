@@ -9,6 +9,7 @@ import java.util.Optional;
 
 
 public interface RegisterRepository extends JpaRepository<AuthModel, Integer> {
+    Optional<AuthModel> findById(Long id);
     Optional<AuthModel> findByEmail(String email);
     Optional<AuthModel> findByStudentId(String studentId);
     Optional<AuthModel> findByUsername(String username);

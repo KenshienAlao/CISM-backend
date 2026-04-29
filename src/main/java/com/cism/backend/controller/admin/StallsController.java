@@ -12,6 +12,7 @@ import com.cism.backend.service.admin.CreateStallService;
 import java.io.IOException;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,11 +32,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RequestMapping("/api/admin")
 public class StallsController {
     
-    private final CreateStallService createStallService;
-
-    public StallsController(CreateStallService createStallService) {
-        this.createStallService = createStallService;
-    }
+    @Autowired
+    private CreateStallService createStallService;
 
     @PostMapping("/create-stall")
     public ResponseEntity <Api<StallResponseDto>> createStall(@ModelAttribute CreateUserDto entity) throws IOException {

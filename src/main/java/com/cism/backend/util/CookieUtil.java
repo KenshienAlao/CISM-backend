@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 @Component
 public class CookieUtil {
 
-    @Value("${app.env:prod}")
+    @Value("${app.env:dev}")
     private String env; // for local development set to "dev" and for production set to "prod"
 
     public void addCookie(HttpServletResponse response, String name, String value, long maxAgeInMs) {

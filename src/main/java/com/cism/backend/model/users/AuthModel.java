@@ -1,10 +1,12 @@
 package com.cism.backend.model.users;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -14,6 +16,9 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import com.cism.backend.model.system.review.ReviewModel;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,12 +30,18 @@ import java.util.List;
 @Builder
 @Table(name = "users")
 public class AuthModel implements UserDetails {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) private long id;
+
+    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true) 
+    @JsonIgnore
+    private List<ReviewModel> reviewList;
+
     
     @Column(unique = false, nullable = false)
     @NotBlank(message = "Username is Required")
-    private String username;
+    private String clientName;
 
     @Column(unique = true, nullable = true)
     private String studentId;
@@ -52,6 +63,11 @@ public class AuthModel implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role == null ? "ROLE_USER" : role));
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email;
     }
 
     @Override

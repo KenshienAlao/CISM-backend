@@ -42,7 +42,11 @@ public class StallDrinksModel {
 
     @Column(unique = false, nullable = false) private Integer stocks;
 
-    @Column(unique = false, nullable = false) private String image;
+    @Column(unique = false, nullable = true) private String image;
+
+    @Column(unique = false, nullable = false) private Integer sold;
+
+    @Column(unique = false, nullable = false) private Integer previousSold;
 
     @Column(unique = false, nullable = false) private Instant createdAt;
 

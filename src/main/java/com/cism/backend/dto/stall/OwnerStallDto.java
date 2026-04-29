@@ -10,9 +10,18 @@ public record OwnerStallDto(
     List<MealsModel> meals,
     List<SnacksModel> snacks,
     List<DrinksModel> drinks,
-    IncomesModel incomes
+    List<ReviewModel> reviews,
+    IncomesModel incomes,
+    TrendDto revenueTrend
 ) {
-     public record UserModel(
+    public record TrendDto(
+        BigDecimal currentPeriodTotal,
+        BigDecimal previousPeriodTotal,
+        double percentageChange,
+        String trend // "up", "down", "neutral"
+    ) {}
+
+    public record UserModel(
         Long id,
         Long stallId,
         String name,
@@ -32,6 +41,8 @@ public record OwnerStallDto(
         String name,
         String image,
         Integer stocks,
+        Integer sold,
+        Integer previousSold,
         Instant createdAt,
         Instant updatedAt
     ) {
@@ -44,6 +55,8 @@ public record OwnerStallDto(
         String name,
         String image,
         Integer stocks,
+        Integer sold,
+        Integer previousSold,
         Instant createdAt,
         Instant updatedAt
     ) {
@@ -56,10 +69,21 @@ public record OwnerStallDto(
         String name,
         String image,
         Integer stocks,
+        Integer sold,
+        Integer previousSold,
         Instant createdAt,
         Instant updatedAt
     ) {
     }
+
+    public record ReviewModel(
+        Long id,
+        Long itemId,
+        Long userId,
+        Integer star,
+        String comment,
+        Instant createdAt
+    ) {}
 
     public record IncomesModel(
         Long id,

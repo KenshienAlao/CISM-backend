@@ -19,6 +19,7 @@ import com.cism.backend.model.stalls.StallIncomesModel;
 import com.cism.backend.model.stalls.StallMealsModel;
 import com.cism.backend.model.stalls.StallSnacksModel;
 import com.cism.backend.model.stalls.StallUsersModel;
+import com.cism.backend.model.system.review.ReviewModel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,7 +41,7 @@ import java.util.Collections;
 public class StallModel implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
 
     @OneToMany(mappedBy = "stall", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
@@ -58,9 +59,14 @@ public class StallModel implements UserDetails {
     @JsonIgnore
     private List<StallUsersModel> userList;
 
+    @OneToMany(mappedBy = "stall", cascade = CascadeType.ALL, orphanRemoval = true) 
+    @JsonIgnore
+    private List<ReviewModel> reviewList;
+
     @OneToMany(mappedBy = "stall", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<StallIncomesModel> incomeList;
+
 
     @Column(unique = true, nullable = false) private String licence;
     @Column(unique = true, nullable = false) private String password;

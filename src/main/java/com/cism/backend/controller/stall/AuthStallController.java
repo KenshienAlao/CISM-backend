@@ -15,6 +15,8 @@ import com.cism.backend.service.stalls.tokenStallService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,25 +28,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/api/auth/stall")
 public class AuthStallController {
     
-    private final CookieUtil cookieUtil;
-    private final AuthStallService authStallService;
-    private final ProfileStallService profileStallService;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final tokenStallService tokenStallService;
 
-    public AuthStallController(AuthStallService authStallService, CookieUtil cookieUtil, ProfileStallService profileStallService, JwtTokenProvider jwtTokenProvider, tokenStallService tokenStallService) {
-        this.authStallService = authStallService;
-        this.cookieUtil = cookieUtil;
-        this.profileStallService = profileStallService;
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.tokenStallService = tokenStallService;
-    }
-
-    @GetMapping("/test")
-    public String test() {
-        return "Hello world";
-    }
+    @Autowired
+    private CookieUtil cookieUtil;
     
+    @Autowired
+    private AuthStallService authStallService;
+
+    @Autowired
+    private ProfileStallService profileStallService;
+    
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+    
+    @Autowired
+    private tokenStallService tokenStallService;
+
     @PostMapping("/login")
     public ResponseEntity<Api<LoginStallResponseDto>> loginStall(@RequestBody LoginStallDto entity, HttpServletResponse response) throws Exception {
 

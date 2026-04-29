@@ -75,7 +75,7 @@ public class AuthService {
         AuthModel response = AuthModel.builder()
             .studentId(studentId)
             .email(email)
-            .username(username)
+            .clientName(username)
             .password(passwordEncoder.encode(password))
             .build();
 

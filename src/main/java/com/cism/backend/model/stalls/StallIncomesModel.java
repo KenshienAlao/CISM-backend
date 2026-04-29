@@ -43,6 +43,3 @@ public class StallIncomesModel {
     @Column(unique = false, nullable = false) private Instant createdAt;
 
 }
-
-
-// fetch the info of the stall 
