@@ -48,6 +48,12 @@ public class ItemService {
                                 .map(r -> new AllStallDto.Review(
                                                 r.getId(),
                                                 r.getItemId(),
+                                                r.getUsers() != null ? r.getUsers().getId() : null,
+                                                r.getUsers() != null ? new AllStallDto.User(
+                                                        r.getUsers().getClientName(),
+                                                        r.getUsers().getAvatar(),
+                                                        r.getUsers().getRole()
+                                                ) : null,
                                                 r.getStar(),
                                                 r.getComment(),
                                                 r.getCreateAt()))

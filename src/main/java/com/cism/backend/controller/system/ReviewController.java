@@ -18,30 +18,28 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 
-
-
 @RestController
 @RequestMapping("/api/client/review")
 public class ReviewController {
-    
+
     @Autowired
     private ReviewService reviewService;
-    
+
     @GetMapping("/review-get-all")
     public ResponseEntity<Api<List<ReviewResponse>>> reviewGetAll() throws Exception {
         List<ReviewResponse> success = reviewService.getAllReview();
         return ResponseEntity.ok(Api.ok("Review get all success", "REVIEW_GET_ALL_SUCCESS", success));
     }
-    
 
-    @PostMapping("/review-item/{stallId}")
-    public ResponseEntity<Api<ReviewResponse>> reviewItem(@PathVariable Long stallId, @RequestBody ReviewRequest entity) throws Exception {
-        ReviewResponse success = reviewService.createReviewService(stallId, entity);
+    @PostMapping("/review-item")
+    public ResponseEntity<Api<ReviewResponse>> reviewItem(@RequestBody ReviewRequest entity) throws Exception {
+        ReviewResponse success = reviewService.createReviewService(entity);
         return ResponseEntity.ok(Api.ok("Review item success", "REVIEW_ITEM_SUCCESS", success));
     }
-    
+
     @DeleteMapping("/review-delete/{userId}/{reviewId}")
-    public ResponseEntity<Api<ReviewResponse>> reviewDelete(@PathVariable Long userId, @PathVariable Long reviewId) throws Exception  {
+    public ResponseEntity<Api<ReviewResponse>> reviewDelete(@PathVariable Long userId, @PathVariable Long reviewId)
+            throws Exception {
         ReviewResponse success = reviewService.deleteReviewService(userId, reviewId);
         return ResponseEntity.ok(Api.ok("Review delete success", "REVIEW_DELETE_SUCCESS", success));
     }

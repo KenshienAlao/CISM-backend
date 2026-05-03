@@ -18,9 +18,17 @@ public record AllStallDto(
         public record Review(
                         Long id,
                         Long itemId,
+                        Long userId,
+                        User user,
                         Integer star,
                         String comment,
                         java.time.Instant createdAt) {
+        }
+
+        public record User(
+                        String clientName,
+                        String avatar,
+                        String role) {
         }
 
         public record Item(

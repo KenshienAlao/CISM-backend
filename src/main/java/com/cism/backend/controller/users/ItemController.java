@@ -20,8 +20,9 @@ public class ItemController {
     private ItemService itemService;
 
     @GetMapping("/get-all-item")
-    public ResponseEntity<Api<List<AllStallDto>>> getAllItem() {
+    public ResponseEntity<Api<List<AllStallDto>>> getAllItem() throws Exception {
         List<AllStallDto> success = itemService.getAllItem();
         return ResponseEntity.ok(Api.ok("Success get all items", "SUCCESS_GET_ALL_ITEMS", success));
     }
+
 }

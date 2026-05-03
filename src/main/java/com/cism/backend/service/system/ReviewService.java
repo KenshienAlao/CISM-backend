@@ -44,9 +44,9 @@ public class ReviewService {
     }
 
     @Transactional
-    public ReviewResponse createReviewService(Long stallId, ReviewRequest entity) throws Exception {
+    public ReviewResponse createReviewService(ReviewRequest entity) throws Exception {
         String email = currentUserLicence.getCurrentUserEmail();
-        StallModel stall = createStallRepository.findById(stallId)
+        StallModel stall = createStallRepository.findById(entity.stallId())
                 .orElseThrow(() -> new BadrequestException("Stall not found", "STALL_NOT_FOUND"));
         AuthModel user = registerRepository.findByEmail(email)
                 .orElseThrow(() -> new BadrequestException("User not found", "USER_NOT_FOUND"));
@@ -97,13 +97,12 @@ public class ReviewService {
     }
 
     private ReviewResponse mapToResponseDto(ReviewModel entity) {
+        var user = entity.getUsers();
         return new ReviewResponse(
-                entity.getId(),
-                entity.getStall().getId(),
-                entity.getUsers().getId(),
-                entity.getItemId(),
-                entity.getStar(),
+                new ReviewResponse.User(user.getClientName(), user.getAvatar(), user.getRole()),
                 entity.getComment(),
+                entity.getStar(),
+                entity.getItemId(),
                 entity.getCreateAt());
     }
 
