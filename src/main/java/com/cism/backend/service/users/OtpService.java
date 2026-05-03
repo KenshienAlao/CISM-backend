@@ -102,7 +102,8 @@ public class OtpService {
     }
 
     // Runs every 5 minutes — deletes all OTPs that are older than 5 minutes (expired)
-    @Scheduled(fixedRate = 5 * 60 * 1000)
+    // initialDelay ensures this doesn't race with clearAllOtpsOnStartup()
+    @Scheduled(initialDelay = 60 * 1000, fixedRate = 5 * 60 * 1000)
     @Transactional
     public void cleanupExpiredOtps() {
         Instant cutoff = Instant.now().minus(Duration.ofMinutes(COOLDOW_MINUTES));
@@ -114,7 +115,7 @@ public class OtpService {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void clearAllOtpsOnStartup() {
-        otpRepository.deleteAll();
+        otpRepository.deleteAllBulk();
         log.info("Server started: all pending OTPs have been invalidated.");
     }
 
