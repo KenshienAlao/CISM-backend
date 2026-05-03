@@ -37,11 +37,16 @@ public class EmailService {
                 helper.setSubject("OTP Verification");
                 helper.setText("<p>Your verification code is: <strong>" + otp + "</strong></p>", true);
 
+                log.info("Attempting to send email via JavaMailSender (attempt {})...", attempt);
                 mailSender.send(message);
                 log.info("OTP email successfully sent to {} (attempt {})", to, attempt);
                 return; // success — exit immediately
             } catch (Exception e) {
-                log.warn("Attempt {}/{} failed to send OTP email to {}: {}", attempt, MAX_RETRIES, to, e.getMessage());
+                log.error("EXCEPTION during email attempt {}: {}", attempt, e.getClass().getName());
+                log.error("Error message: {}", e.getMessage());
+                if (e.getCause() != null) {
+                    log.error("Caused by: {}", e.getCause().getMessage());
+                }
                 if (attempt < MAX_RETRIES) {
                     try {
                         long backoff = attempt * 5000L; // 5s, 10s
