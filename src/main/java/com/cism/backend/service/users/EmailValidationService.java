@@ -1,9 +1,6 @@
 package com.cism.backend.service.users;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.ResponseEntity;
 import com.cism.backend.exception.BadrequestException;
 
 import java.time.Duration;
@@ -12,35 +9,23 @@ import java.util.Deque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 public class EmailValidationService {
 
-    private final String apiKey;
-    private final RestTemplate restTemplate;
-
-    // Per email+IP tracking — unique per person per email
-    private final ConcurrentHashMap<String, Instant> bannedKeys = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Deque<Instant>> requestTimes = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Deque<Instant>> banViolations = new ConcurrentHashMap<>();
 
     // Global IP tracking — limits total requests from one IP regardless of email
     // High enough for shared WiFi (10 people), low enough to stop bots (100s/min)
     private final ConcurrentHashMap<String, Instant> globalBanned = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Deque<Instant>> globalIpRequestTimes = new ConcurrentHashMap<>();
 
-    private record ApiLayerResponse(
-        @JsonProperty("format_valid") boolean formatValid,
-        @JsonProperty("smtp_check") boolean smtpCheck
-    ) {}
-
-    public EmailValidationService(@Value("${apilayer.api-key:}") String apiKey) {
-        this.apiKey = apiKey;
-        this.restTemplate = new RestTemplate();
-    }
+    // Per email+IP tracking — unique per person per email
+    private final ConcurrentHashMap<String, Instant> bannedKeys = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Deque<Instant>> requestTimes = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Deque<Instant>> banViolations = new ConcurrentHashMap<>();
+    
 
     private void enforceRateLimit(String email, String ipAddress) {
         String compositeKey = ipAddress + ":" + email;
@@ -106,29 +91,7 @@ public class EmailValidationService {
     }
 
     public boolean validateEmail(String email, String ipAddress) {
-
-        
-
-
         enforceRateLimit(email, ipAddress);
-        if (apiKey == null || apiKey.trim().isEmpty()) {
-            log.warn("EMAIL_API key is missing. Skipping validation.");
-            return true;
-        }
-
-        String url = String.format("https://apilayer.net/api/check?access_key=%s&email=%s", apiKey, email);
-
-        try {
-            ResponseEntity<ApiLayerResponse> responseEntity = restTemplate.getForEntity(url, ApiLayerResponse.class);
-            if (responseEntity.getStatusCode().is2xxSuccessful() && responseEntity.getBody() != null) {
-                ApiLayerResponse body = responseEntity.getBody();
-                return body.formatValid() && body.smtpCheck();
-            }
-        } catch (Exception e) {
-            log.error("API Layer email validation failed: {}", e.getMessage());
-            return true;
-        }
-
-        return false;
+        return true;
     }
 }

@@ -2,7 +2,6 @@ package com.cism.backend.controller.users;
 
 import java.util.Random;
 
-
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,25 +20,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
 @RestController
 @RequestMapping("/api/resend")
 public class ResendController {
 
     @Autowired
     private RegisterRepository registerRepository;
-    
+
     @Autowired
     private EmailService emailService;
-    
+
     @Autowired
     private OtpService otpService;
-    
+
     @Autowired
     private EmailValidationService emailValidationService;
 
     @PostMapping("/send-otp")
-    public ResponseEntity<Api<OtpDto>> sendOtp(@RequestBody OtpDto entity, HttpServletRequest request) throws Exception {
+    public ResponseEntity<Api<OtpDto>> sendOtp(@RequestBody OtpDto entity, HttpServletRequest request)
+            throws Exception {
+        System.out.println("Send OTP");
         String email = entity.email();
         String ipAddress = request.getRemoteAddr();
 
@@ -60,12 +60,12 @@ public class ResendController {
         otpService.storeOtp(email, otp, ipAddress);
 
         OtpDto success = emailService.sendOtpEmail(email, otp);
-        
+
         return ResponseEntity.ok(Api.ok("OTP sent successfully", "OTP_SENT", success));
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity <Api<OtpDto>> verifyOtp(@RequestBody OtpDto entity) throws Exception {
+    public ResponseEntity<Api<OtpDto>> verifyOtp(@RequestBody OtpDto entity) throws Exception {
         String email = entity.email();
         String otp = entity.otp();
         OtpDto success = otpService.verifyOtp(email, otp);

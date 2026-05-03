@@ -30,8 +30,6 @@ spring:
           starttls:
             enable: true
 
-apilayer:
-  api-key: ${EMAIL_API_KEY:}
 
 app:
   cors:
@@ -43,6 +41,9 @@ app:
     secret: ${JWT_SECRET}
     expiration-ms: 3600000 # 1 hour
     refresh-expiration-ms: 604800000 # 7 days
+    cookie:
+      secure: ${COOKIE_SECURE:true}
+      same-site: ${COOKIE_SAME_SITE:None}
 
 cloudinary:
   cloud-name: ${CLOUDINARY_CLOUD_NAME}

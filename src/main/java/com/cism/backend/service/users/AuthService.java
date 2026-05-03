@@ -54,7 +54,6 @@ public class AuthService {
         if (isBlank(email) || isBlank(username) || isBlank(password) || isBlank(otp)) {
             throw new BadrequestException("All fields and OTP are required", "ALL_FIELDS_REQUIRED");
         }
-        otpService.verifyOtp(email, otp);
 
         if (!isBlank(studentId)) {
             if (registerRepository.findByStudentId(studentId).isPresent()) {
@@ -68,6 +67,10 @@ public class AuthService {
             }
         }
 
+        // Verify OTP only after checking if user exists to avoid consuming OTP for
+        // invalid requests
+        otpService.verifyOtp(email, otp);
+
         AuthModel response = AuthModel.builder()
                 .studentId(studentId)
                 .email(email)
@@ -76,7 +79,7 @@ public class AuthService {
                 .build();
 
         registerRepository.save(response);
-        return new RegisterDto(studentId, email, username, password, otp);
+        return new RegisterDto(username, studentId, email, password, otp);
     }
 
     @Transactional
