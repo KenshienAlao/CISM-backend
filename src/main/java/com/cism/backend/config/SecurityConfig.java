@@ -36,18 +36,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/update-profile", "/api/auth/delete-account",
-                                "/api/auth/validate-cookie", "/api/auth/avatar",
-                                "/api/auth/stall/get-profile", "/api/auth/stall/validate-cookie")
+                                "/api/auth/avatar", "/api/auth/stall/get-profile")
                         .authenticated()
+                        .requestMatchers("/api/auth/validate-cookie", "/api/auth/stall/validate-cookie").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/auth/stall/**").permitAll()
-
                         .requestMatchers("/api/resend/**").permitAll()
                         .requestMatchers("/api/admin/**").authenticated()
-                        .requestMatchers("/api/auth/stall/**").permitAll()
                         .requestMatchers("/api/owner/stall/**").authenticated()
                         .requestMatchers("/api/client/review/**").permitAll()
-                        .requestMatchers("/api/user/stall/**").authenticated()
+                        .requestMatchers("/api/user/stall/**").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
