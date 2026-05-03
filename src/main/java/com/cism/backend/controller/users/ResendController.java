@@ -58,9 +58,11 @@ public class ResendController {
         String otp = String.format("%06d", new Random().nextInt(1000000));
 
         otpService.storeOtp(email, otp, ipAddress);
+        
+        // Send email asynchronously
+        emailService.sendOtpEmail(email, otp);
 
-        OtpDto success = emailService.sendOtpEmail(email, otp);
-
+        OtpDto success = new OtpDto(email, otp);
         return ResponseEntity.ok(Api.ok("OTP sent successfully", "OTP_SENT", success));
     }
 

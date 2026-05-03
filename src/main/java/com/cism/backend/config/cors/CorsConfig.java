@@ -19,14 +19,14 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(CorsProperties properties) {
         CorsConfiguration config = new CorsConfiguration();
-        
+
         List<String> origins = properties.allowedOrigins().stream()
                 .flatMap(origin -> Arrays.stream(origin.split(",")))
                 .map(String::trim)
                 .toList();
-        
+
         logger.info("Configuring CORS with allowed origins: {}", origins);
-        
+
         config.setAllowedOrigins(origins);
         config.setAllowedMethods(properties.allowedMethods());
         config.setAllowedHeaders(properties.allowedHeaders());
@@ -37,4 +37,3 @@ public class CorsConfig {
         return source;
     }
 }
-
