@@ -30,8 +30,6 @@ public class AuthService {
     @Autowired
     private RegisterRepository registerRepository;
 
-    @Autowired
-    private OtpService otpService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -49,10 +47,9 @@ public class AuthService {
         String studentId = isBlank(entity.studentId()) ? null : entity.studentId();
         String username = entity.username();
         String password = entity.password();
-        String otp = entity.otp();
 
-        if (isBlank(email) || isBlank(username) || isBlank(password) || isBlank(otp)) {
-            throw new BadrequestException("All fields and OTP are required", "ALL_FIELDS_REQUIRED");
+        if (isBlank(email) || isBlank(username) || isBlank(password)) {
+            throw new BadrequestException("All fields are required", "ALL_FIELDS_REQUIRED");
         }
 
         if (!isBlank(studentId)) {
@@ -67,10 +64,6 @@ public class AuthService {
             }
         }
 
-        // Verify OTP only after checking if user exists to avoid consuming OTP for
-        // invalid requests
-        otpService.verifyOtp(email, otp);
-
         AuthModel response = AuthModel.builder()
                 .studentId(studentId)
                 .email(email)
@@ -79,7 +72,7 @@ public class AuthService {
                 .build();
 
         registerRepository.save(response);
-        return new RegisterDto(username, studentId, email, password, otp);
+        return new RegisterDto(username, studentId, email, password);
     }
 
     @Transactional

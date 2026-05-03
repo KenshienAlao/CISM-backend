@@ -4,8 +4,7 @@ public record RegisterDto(
         String username,
         String studentId,
         String email,
-        String password,
-        String otp
+        String password
 ) {
         
 }
