@@ -5,6 +5,7 @@ import java.time.Instant;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -32,6 +33,7 @@ public class ItemVariationsModel {
     @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "item_id", nullable = false)
+    @JsonBackReference
     private StallItemModel stallitem;
 
     private String name;

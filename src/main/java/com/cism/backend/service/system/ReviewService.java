@@ -16,6 +16,7 @@ import com.cism.backend.repository.system.ReviewRepository;
 import com.cism.backend.repository.users.RegisterRepository;
 import com.cism.backend.util.CurrentUserLicence;
 import com.cism.backend.util.IsBlack;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.Instant;
 import java.util.List;
@@ -42,6 +43,9 @@ public class ReviewService {
 
     @Autowired
     private StallItemRepository stallItemRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @Transactional
     public List<ReviewResponse> getAllReview() throws Exception {
@@ -86,7 +90,14 @@ public class ReviewService {
                 .build();
 
         ReviewModel savedReview = reviewRepository.save(review);
-        return mapToResponseDto(savedReview);
+        ReviewResponse response = mapToResponseDto(savedReview);
+
+        messagingTemplate.convertAndSendToUser(
+                stall.getLicence(),
+                "/queue/notifications",
+                response);
+
+        return response;
     }
 
     @Transactional

@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.cism.backend.model.admin.StallModel;
 import com.cism.backend.model.system.review.ReviewModel;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -39,6 +40,7 @@ public class StallItemModel {
 
     @Builder.Default
     @OneToMany(mappedBy = "stallitem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<ItemVariationsModel> itemVariations = new java.util.ArrayList<>();
 
     @OneToMany(mappedBy = "stallitem", cascade = CascadeType.ALL)
