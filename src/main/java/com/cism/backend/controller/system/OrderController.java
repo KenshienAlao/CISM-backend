@@ -47,4 +47,10 @@ public class OrderController {
         return ResponseEntity.ok(Api.ok("Order retrieved successfully", "ORDER_RETRIEVED", success));
     }
 
+    @PostMapping("/delete-order/{id}")
+    public ResponseEntity<Api<String>> deleteOrder(@PathVariable Long id) {
+        orderService.deleteOrder(id);
+        return ResponseEntity.ok(Api.ok("Order deleted successfully", "ORDER_DELETED", "SUCCESS"));
+    }
+
 }

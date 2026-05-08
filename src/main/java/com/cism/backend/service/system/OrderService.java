@@ -245,6 +245,22 @@ public class OrderService {
         return response;
     }
 
+    @Transactional
+    public void deleteOrder(Long orderId) {
+        OrderModel order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new BadrequestException("Order not found", "ORDER_NOT_FOUND"));
+
+        if (!order.getUser().getId().equals(getCurrentUser().getId())) {
+            throw new BadrequestException("Unauthorized access to order", "UNAUTHORIZED");
+        }
+
+        if (!order.getStatus().equalsIgnoreCase("CANCELLED")) {
+            throw new BadrequestException("Only cancelled orders can be deleted", "INVALID_STATUS");
+        }
+
+        orderRepository.delete(order);
+    }
+
     private OrderResponse mapToOrderResponse(OrderModel order) {
         List<OrderItemResponse> itemResponses = order.getOrderItems().stream()
                 .map(item -> new OrderItemResponse(
