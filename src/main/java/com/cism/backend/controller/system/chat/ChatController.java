@@ -64,6 +64,7 @@ public class ChatController {
     public ResponseEntity<List<CustomerSearchResponse>> searchCustomers(@RequestParam String query) {
         return ResponseEntity.ok(chatService.searchCustomers(query));
     }
+
     @GetMapping("/presence/{type}/{id}")
     public ResponseEntity<java.util.Map<String, Object>> getPresence(@PathVariable String type, @PathVariable Long id) {
         return ResponseEntity.ok(chatService.getPresence(type, id));
