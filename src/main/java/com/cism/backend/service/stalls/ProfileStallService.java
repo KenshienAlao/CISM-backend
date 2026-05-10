@@ -180,7 +180,9 @@ public class ProfileStallService {
                                 v.getName(),
                                 v.getStock(),
                                 v.getPrice(),
-                                v.getImage());
+                                v.getImage(),
+                                v.getSold(),
+                                v.getPreviousSold());
         }
 
         private OwnerStallDto.ReviewModel mapReviews(ReviewModel r) {

@@ -86,6 +86,8 @@ public class ItemService {
                                 v.getName(),
                                 v.getStock(),
                                 v.getPrice(),
-                                v.getImage());
+                                v.getImage(),
+                                v.getSold(),
+                                v.getPreviousSold());
         }
 }

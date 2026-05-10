@@ -427,8 +427,11 @@ public class OrderService {
         if (variation != null) {
             if (variation.getStock() != null) {
                 variation.setStock(Math.max(0, variation.getStock() - (quantity * factor)));
-                itemvariationsRepository.save(variation);
             }
+            if (variation.getSold() != null) {
+                variation.setSold(Math.max(0, variation.getSold() + (quantity * factor)));
+            }
+            itemvariationsRepository.save(variation);
         } else {
             if (item.getStocks() != null) {
                 item.setStocks(Math.max(0, item.getStocks() - (quantity * factor)));

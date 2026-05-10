@@ -353,6 +353,8 @@ public class ItemStallService {
                 entity.getName(),
                 entity.getStock(),
                 entity.getPrice(),
-                entity.getImage());
+                entity.getImage(),
+                entity.getSold(),
+                entity.getPreviousSold());
     }
 }

@@ -87,7 +87,7 @@ public class AuthController {
     public ResponseEntity<Api<LoginDto>> validateCookie() throws Exception {
         AuthModel user = authService.validateCookieService();
         if (user == null) {
-            return ResponseEntity.ok(Api.error("Not authenticated", "UNAUTHENTICATED", null));
+            return ResponseEntity.status(401).body(Api.error("Not authenticated", "UNAUTHENTICATED", null));
         }
         LoginDto response = new LoginDto(user.getEmail(), null, null, null, user);
         return ResponseEntity.ok(Api.ok("Cookie is valid", "COOKIE_VALID", response));

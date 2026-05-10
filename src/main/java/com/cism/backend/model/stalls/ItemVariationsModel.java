@@ -43,6 +43,12 @@ public class ItemVariationsModel {
     private Integer stock;
 
     private String image;
+    
+    @Builder.Default
+    private Integer sold = 0;
+    
+    @Builder.Default
+    private Integer previousSold = 0;
 
     private Instant createdAt;
     private Instant updatedAt;

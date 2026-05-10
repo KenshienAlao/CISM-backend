@@ -126,7 +126,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 request.getRequestURI().contains("/owner");
 
         if (isStall)
-            return stallToken != null ? stallToken : userToken;
-        return userToken != null ? userToken : stallToken;
+            return stallToken;
+        return userToken;
     }
 }

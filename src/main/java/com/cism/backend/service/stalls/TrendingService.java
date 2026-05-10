@@ -16,11 +16,6 @@ public class TrendingService {
     @Autowired
     private StallItemRepository stallItemRepository;
 
-    /**
-     * Snapshots the current 'sold' count into 'previousSold' and resets 'sold' to 0.
-     * This is scheduled to run once a week (every Sunday at midnight).
-     * Cron: 0 0 0 * * SUN
-     */
     @Scheduled(cron = "0 0 0 * * SUN")
     @Transactional
     public void snapshotWeeklySales() {
@@ -29,15 +24,20 @@ public class TrendingService {
         stallItemRepository.findAll().forEach(item -> {
             item.setPreviousSold(item.getSold());
             item.setSold(0);
+
+            if (item.getItemVariations() != null) {
+                item.getItemVariations().forEach(v -> {
+                    v.setPreviousSold(v.getSold());
+                    v.setSold(0);
+                });
+            }
+
             stallItemRepository.save(item);
         });
 
         log.info("Weekly sales snapshot completed.");
     }
 
-    /**
-     * Manual snapshot for testing purposes.
-     */
     @Transactional
     public void manualSnapshot() {
         snapshotWeeklySales();
