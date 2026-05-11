@@ -421,6 +421,9 @@ public class OrderService {
                 stallName,
                 stallImage,
                 order.getStall().getId(),
+                order.getUser().getClientName(),
+                order.getUser().getEmail(),
+                order.getUser().getAvatar(),
                 itemResponses);
     }
 

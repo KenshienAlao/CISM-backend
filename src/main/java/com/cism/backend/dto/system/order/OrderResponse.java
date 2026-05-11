@@ -20,5 +20,8 @@ public record OrderResponse(
     String stallName,
     String stallImage,
     Long stallId,
+    String customerName,
+    String customerEmail,
+    String customerImage,
     List<OrderItemResponse> orderItems
 ) {}
