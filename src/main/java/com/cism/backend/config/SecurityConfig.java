@@ -44,8 +44,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/resend/**").permitAll()
                         .requestMatchers("/api/admin/**").authenticated()
                         .requestMatchers("/api/owner/stall/**").authenticated()
-                        .requestMatchers("/api/client/review/**").permitAll()
                         .requestMatchers("/api/user/stall/**").permitAll()
+
+                        // Review
+                        .requestMatchers("/api/client/review/**").permitAll()
                         // Cart
                         .requestMatchers("/api/customer/cart/**").authenticated()
                         // Order
@@ -54,7 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/chat/**").authenticated()
                         // WebSocket
                         .requestMatchers("/ws/**").permitAll()
-                        
+
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
