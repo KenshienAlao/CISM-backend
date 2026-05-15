@@ -28,6 +28,8 @@ import com.cism.backend.config.JwtTokenProvider;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import com.cism.backend.dto.users.ChangePasswordDto;
+import com.cism.backend.dto.users.ChangeEmailDto;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -97,6 +99,18 @@ public class AuthController {
     public ResponseEntity<Api<String>> updateAvatar(@RequestParam("file") MultipartFile file) throws IOException {
         String avatarUrl = authService.updateAvatarService(file);
         return ResponseEntity.ok(Api.ok("Avatar updated", "AVATAR_UPDATED", avatarUrl));
+    }
+
+    @PatchMapping("/change-password")
+    public ResponseEntity<Api<String>> changePassword(@RequestBody ChangePasswordDto entity) {
+        authService.changePasswordService(entity);
+        return ResponseEntity.ok(Api.ok("Password changed successfully", "PASSWORD_CHANGED_SUCCESS", null));
+    }
+
+    @PatchMapping("/change-email")
+    public ResponseEntity<Api<String>> changeEmail(@RequestBody ChangeEmailDto entity) {
+        authService.changeEmailService(entity);
+        return ResponseEntity.ok(Api.ok("Email changed successfully", "EMAIL_CHANGED_SUCCESS", null));
     }
 
     @PostMapping("/refresh")

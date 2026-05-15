@@ -36,7 +36,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/update-profile", "/api/auth/delete-account",
-                                "/api/auth/avatar", "/api/auth/stall/get-profile")
+                                "/api/auth/avatar", "/api/auth/stall/get-profile",
+                                "/api/auth/change-password", "/api/auth/change-email")
                         .authenticated()
                         .requestMatchers("/api/auth/validate-cookie", "/api/auth/stall/validate-cookie").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()

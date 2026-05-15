@@ -178,6 +178,42 @@ public class AuthService {
         return new LoginDto(email, null, newAccessToken, newRefreshToken, user);
     }
 
+    @Transactional
+    public void changePasswordService(com.cism.backend.dto.users.ChangePasswordDto entity) {
+        String email = currentUserLicence.getCurrentUserEmail();
+        AuthModel user = registerRepository.findByEmail(email)
+                .orElseThrow(() -> new BadrequestException("User not found", "USER_NOT_FOUND"));
+
+        if (!passwordEncoder.matches(entity.oldPassword(), user.getPassword())) {
+            throw new BadrequestException("Incorrect old password", "INCORRECT_OLD_PASSWORD");
+        }
+
+        if (entity.newPassword().length() < 8) {
+            throw new BadrequestException("Password must be at least 8 characters", "PASSWORD_TOO_SHORT");
+        }
+
+        user.setPassword(passwordEncoder.encode(entity.newPassword()));
+        registerRepository.save(user);
+    }
+
+    @Transactional
+    public void changeEmailService(com.cism.backend.dto.users.ChangeEmailDto entity) {
+        String email = currentUserLicence.getCurrentUserEmail();
+        AuthModel user = registerRepository.findByEmail(email)
+                .orElseThrow(() -> new BadrequestException("User not found", "USER_NOT_FOUND"));
+
+        if (!passwordEncoder.matches(entity.password(), user.getPassword())) {
+            throw new BadrequestException("Incorrect password", "INCORRECT_PASSWORD");
+        }
+
+        if (registerRepository.findByEmail(entity.newEmail()).isPresent()) {
+            throw new BadrequestException("Email already exists", "EMAIL_ALREADY_EXISTS");
+        }
+
+        user.setEmail(entity.newEmail());
+        registerRepository.save(user);
+    }
+
     public boolean isBlank(String entity) {
         return entity == null || entity.isBlank();
     }
