@@ -1,9 +1,12 @@
 package com.cism.backend.service.stalls;
 
 import java.time.Instant;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.cism.backend.dto.stall.ItemVariationsRequest;
 import com.cism.backend.dto.stall.ItemVariationsResponse;
@@ -11,6 +14,7 @@ import com.cism.backend.dto.stall.RequestItemDto;
 import com.cism.backend.dto.stall.RequestItemVariationDto;
 import com.cism.backend.dto.stall.ResponseItemDto;
 import com.cism.backend.service.users.FileStorageService;
+import com.cism.backend.service.system.PreorderService;
 import com.cism.backend.exception.BadrequestException;
 import com.cism.backend.model.admin.StallModel;
 import com.cism.backend.model.stalls.ItemVariationsModel;
@@ -25,6 +29,9 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class ItemStallService {
+
+    @Autowired
+    private PreorderService preorderService;
 
     @Autowired
     private CreateStallRepository createStallRepository;
@@ -43,6 +50,9 @@ public class ItemStallService {
 
     @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @Transactional
     public ResponseItemDto createNewMealService(RequestItemDto entity) {
@@ -116,6 +126,17 @@ public class ItemStallService {
             stallItemRepository.save(savedItem);
         }
 
+        // Notify inventory change
+        try {
+            Map<String, Object> stockUpdate = new HashMap<>();
+            stockUpdate.put("itemId", savedItem.getId());
+            stockUpdate.put("variationId", null);
+            stockUpdate.put("newStock", savedItem.getStocks());
+            messagingTemplate.convertAndSend("/topic/inventory", (Object) stockUpdate);
+        } catch (Exception e) {
+            System.err.println("Failed to broadcast WebSocket update: " + e.getMessage());
+        }
+
         return mapToResponseDto(savedItem);
     }
 
@@ -170,6 +191,42 @@ public class ItemStallService {
 
         StallItemModel updatedItem = stallItemRepository.save(item);
 
+        // Migrate restocked preorders if stock is > 0
+        if (updatedItem.getStocks() != null && updatedItem.getStocks() > 0) {
+            try {
+                preorderService.handleItemRestocked(updatedItem.getId(), null);
+            } catch (Exception e) {
+                System.err.println("Failed to migrate preorders: " + e.getMessage());
+            }
+        }
+
+        // Notify client real-time inventory updates
+        try {
+            Map<String, Object> stockUpdate = new HashMap<>();
+            stockUpdate.put("itemId", updatedItem.getId());
+            stockUpdate.put("variationId", null);
+            stockUpdate.put("newStock", updatedItem.getStocks());
+            messagingTemplate.convertAndSend("/topic/inventory", (Object) stockUpdate);
+
+            for (ItemVariationsModel variation : updatedItem.getItemVariations()) {
+                if (variation.getStock() != null && variation.getStock() > 0) {
+                    try {
+                        preorderService.handleItemRestocked(updatedItem.getId(), variation.getId());
+                    } catch (Exception e) {
+                        System.err.println("Failed to migrate variation preorder: " + e.getMessage());
+                    }
+                }
+
+                Map<String, Object> varUpdate = new HashMap<>();
+                varUpdate.put("itemId", updatedItem.getId());
+                varUpdate.put("variationId", variation.getId());
+                varUpdate.put("newStock", variation.getStock());
+                messagingTemplate.convertAndSend("/topic/inventory", (Object) varUpdate);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to broadcast WebSocket update: " + e.getMessage());
+        }
+
         return mapToResponseDto(updatedItem);
     }
 
@@ -222,7 +279,33 @@ public class ItemStallService {
                 .mapToInt(v -> v.getStock() != null ? v.getStock() : 0)
                 .sum();
         item.setStocks(totalStock);
-        stallItemRepository.save(item);
+        StallItemModel updatedItem = stallItemRepository.save(item);
+
+        // Migrate restocked variation preorder
+        if (savedVariation.getStock() != null && savedVariation.getStock() > 0) {
+            try {
+                preorderService.handleItemRestocked(updatedItem.getId(), savedVariation.getId());
+            } catch (Exception e) {
+                System.err.println("Failed to migrate variation preorder: " + e.getMessage());
+            }
+        }
+
+        // Notify client real-time inventory updates
+        try {
+            Map<String, Object> stockUpdate = new HashMap<>();
+            stockUpdate.put("itemId", updatedItem.getId());
+            stockUpdate.put("variationId", savedVariation.getId());
+            stockUpdate.put("newStock", savedVariation.getStock());
+            messagingTemplate.convertAndSend("/topic/inventory", (Object) stockUpdate);
+
+            Map<String, Object> parentUpdate = new HashMap<>();
+            parentUpdate.put("itemId", updatedItem.getId());
+            parentUpdate.put("variationId", null);
+            parentUpdate.put("newStock", updatedItem.getStocks());
+            messagingTemplate.convertAndSend("/topic/inventory", (Object) parentUpdate);
+        } catch (Exception e) {
+            System.err.println("Failed to broadcast WebSocket update: " + e.getMessage());
+        }
 
         return mapToVariationResponseDto(savedVariation);
     }
@@ -266,7 +349,33 @@ public class ItemStallService {
                 .mapToInt(v -> v.getStock() != null ? v.getStock() : 0)
                 .sum();
         item.setStocks(totalStock);
-        stallItemRepository.save(item);
+        StallItemModel updatedItem = stallItemRepository.save(item);
+
+        // Migrate restocked variation preorder
+        if (updated.getStock() != null && updated.getStock() > 0) {
+            try {
+                preorderService.handleItemRestocked(updatedItem.getId(), updated.getId());
+            } catch (Exception e) {
+                System.err.println("Failed to migrate variation preorder: " + e.getMessage());
+            }
+        }
+
+        // Notify client real-time inventory updates
+        try {
+            Map<String, Object> stockUpdate = new HashMap<>();
+            stockUpdate.put("itemId", updatedItem.getId());
+            stockUpdate.put("variationId", updated.getId());
+            stockUpdate.put("newStock", updated.getStock());
+            messagingTemplate.convertAndSend("/topic/inventory", (Object) stockUpdate);
+
+            Map<String, Object> parentUpdate = new HashMap<>();
+            parentUpdate.put("itemId", updatedItem.getId());
+            parentUpdate.put("variationId", null);
+            parentUpdate.put("newStock", updatedItem.getStocks());
+            messagingTemplate.convertAndSend("/topic/inventory", (Object) parentUpdate);
+        } catch (Exception e) {
+            System.err.println("Failed to broadcast WebSocket update: " + e.getMessage());
+        }
 
         return mapToVariationResponseDto(updated);
     }
@@ -293,7 +402,18 @@ public class ItemStallService {
                 .mapToInt(v -> v.getStock() != null ? v.getStock() : 0)
                 .sum();
         item.setStocks(totalStock);
-        stallItemRepository.save(item);
+        StallItemModel updatedItem = stallItemRepository.save(item);
+
+        // Notify client real-time inventory updates
+        try {
+            Map<String, Object> parentUpdate = new HashMap<>();
+            parentUpdate.put("itemId", updatedItem.getId());
+            parentUpdate.put("variationId", null);
+            parentUpdate.put("newStock", updatedItem.getStocks());
+            messagingTemplate.convertAndSend("/topic/inventory", (Object) parentUpdate);
+        } catch (Exception e) {
+            System.err.println("Failed to broadcast WebSocket update: " + e.getMessage());
+        }
 
         return mapToVariationResponseDto(variation);
     }

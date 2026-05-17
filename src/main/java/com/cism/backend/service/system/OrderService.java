@@ -30,6 +30,8 @@ import com.cism.backend.repository.stalls.StallItemRepository;
 import com.cism.backend.repository.system.CartRepository;
 import com.cism.backend.repository.system.OrderItemRepository;
 import com.cism.backend.repository.system.OrderRepository;
+import com.cism.backend.repository.system.PreorderRepository;
+import com.cism.backend.repository.system.PreorderSuccessRepository;
 import com.cism.backend.repository.users.RegisterRepository;
 import com.cism.backend.util.CurrentUserLicence;
 
@@ -39,6 +41,12 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class OrderService {
+
+    @Autowired
+    private PreorderRepository preorderRepository;
+
+    @Autowired
+    private PreorderSuccessRepository preorderSuccessRepository;
 
     @Autowired
     private OrderRepository orderRepository;
@@ -128,6 +136,17 @@ public class OrderService {
             order.setOrderItems(List.of(orderItem));
             createdOrders.add(order);
 
+            // Clear matching preorder subscriptions in database
+            if (variation != null) {
+                preorderRepository.deleteByUser_IdAndItem_IdAndVariation_Id(user.getId(), stallItem.getId(),
+                        variation.getId());
+                preorderSuccessRepository.deleteByUser_IdAndItem_IdAndVariation_Id(user.getId(), stallItem.getId(),
+                        variation.getId());
+            } else {
+                preorderRepository.deleteByUser_IdAndItem_IdAndVariationIsNull(user.getId(), stallItem.getId());
+                preorderSuccessRepository.deleteByUser_IdAndItem_IdAndVariationIsNull(user.getId(), stallItem.getId());
+            }
+
             // Skip cart processing
         } else {
             List<CartModel> cartItems = cartRepository.findAllById(request.cartItemIds());
@@ -210,6 +229,21 @@ public class OrderService {
                 order.setOrderItems(orderItems);
                 createdOrders.add(order);
             }
+
+            for (CartModel cartItem : cartItems) {
+                if (cartItem.getVariation() != null) {
+                    preorderRepository.deleteByUser_IdAndItem_IdAndVariation_Id(user.getId(),
+                            cartItem.getStallItem().getId(), cartItem.getVariation().getId());
+                    preorderSuccessRepository.deleteByUser_IdAndItem_IdAndVariation_Id(user.getId(),
+                            cartItem.getStallItem().getId(), cartItem.getVariation().getId());
+                } else {
+                    preorderRepository.deleteByUser_IdAndItem_IdAndVariationIsNull(user.getId(),
+                            cartItem.getStallItem().getId());
+                    preorderSuccessRepository.deleteByUser_IdAndItem_IdAndVariationIsNull(user.getId(),
+                            cartItem.getStallItem().getId());
+                }
+            }
+
             cartRepository.deleteAll(cartItems);
         }
 

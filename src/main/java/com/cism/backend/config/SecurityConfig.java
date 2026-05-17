@@ -53,6 +53,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/customer/cart/**").authenticated()
                         // Order
                         .requestMatchers("/api/customer/order/**").authenticated()
+                        // Preorder
+                        .requestMatchers("/api/customer/preorder/**").authenticated()
                         // Chat
                         .requestMatchers("/api/v1/chat/**").authenticated()
                         // WebSocket
