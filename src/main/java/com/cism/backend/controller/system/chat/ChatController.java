@@ -60,6 +60,14 @@ public class ChatController {
         return ResponseEntity.ok(chatService.deleteMessage(messageId, forMe));
     }
 
+    @DeleteMapping("/conversation/{stallId}")
+    public ResponseEntity<Void> deleteConversation(
+            @PathVariable Long stallId,
+            @RequestParam(required = false) Long customerId) {
+        chatService.deleteConversation(stallId, customerId);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/search-customers")
     public ResponseEntity<List<CustomerSearchResponse>> searchCustomers(@RequestParam String query) {
         return ResponseEntity.ok(chatService.searchCustomers(query));

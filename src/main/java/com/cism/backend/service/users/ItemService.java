@@ -22,6 +22,9 @@ public class ItemService {
 
         @Autowired
         private CreateStallRepository createStallRepository;
+        
+        @Autowired(required = false)
+        private org.springframework.messaging.simp.user.SimpUserRegistry simpUserRegistry;
 
         @Transactional
         public List<AllStallDto> getAllItem() {
@@ -74,7 +77,7 @@ public class ItemService {
                                 profile != null ? profile.getOpenAt() : "00:00",
                                 profile != null ? profile.getCloseAt() : "00:00",
                                 profile != null ? profile.getRole() : "STALL",
-                                profile != null ? profile.getStatus() : false,
+                                simpUserRegistry != null && simpUserRegistry.getUser(stall.getLicence()) != null && !simpUserRegistry.getUser(stall.getLicence()).getSessions().isEmpty(),
                                 reviews,
                                 items,
                                 stall.getCreatedAt());

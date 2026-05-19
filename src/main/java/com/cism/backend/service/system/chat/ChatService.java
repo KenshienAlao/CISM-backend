@@ -28,6 +28,7 @@ import com.cism.backend.repository.users.RegisterRepository;
 import com.cism.backend.util.CurrentUserLicence;
 
 import jakarta.transaction.Transactional;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.cism.backend.model.system.chat.ConversationModel;
 import com.cism.backend.repository.system.chat.ConversationRepository;
@@ -56,6 +57,21 @@ public class ChatService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private HttpServletRequest request;
+
+    private boolean isStallAppRequest(String currentUsername) {
+        if (stallRepository.findByLicence(currentUsername).isEmpty()) return false;
+        try {
+            String appType = request.getHeader("X-App-Type");
+            if (appType == null) appType = request.getParameter("appType");
+            if (appType != null) return "stall".equalsIgnoreCase(appType);
+            return request.getRequestURI() != null && request.getRequestURI().contains("/stall");
+        } catch (Exception e) {
+            return true;
+        }
+    }
+
     @Transactional
     public ChatResponse sendMessage(ChatRequest request) {
         String currentUsername = currentUserLicence.getCurrentUserEmail();
@@ -63,7 +79,7 @@ public class ChatService {
         StallModel stall = stallRepository.findById(request.stallId())
                 .orElseThrow(() -> new BadrequestException("Stall not found", "STALL_NOT_FOUND"));
 
-        boolean isStallOwner = stall.getLicence().equals(currentUsername);
+        boolean isStallOwner = stall.getLicence().equals(currentUsername) && isStallAppRequest(currentUsername);
 
         AuthModel customer;
         AuthModel sender = null;
@@ -125,7 +141,7 @@ public class ChatService {
                     .stream()
                     .filter(c -> {
                         StallModel stall = c.getStall();
-                        boolean isOwner = stall.getLicence().equals(currentUsername);
+                        boolean isOwner = stall.getLicence().equals(currentUsername) && isStallAppRequest(currentUsername);
                         return isOwner ? !c.isDeletedForStall() : !c.isDeletedForCustomer();
                     })
                     .map(this::mapToResponse)
@@ -136,7 +152,7 @@ public class ChatService {
         StallModel stall = stallRepository.findById(stallId)
                 .orElseThrow(() -> new BadrequestException("Stall not found", "STALL_NOT_FOUND"));
 
-        boolean isOwner = stall.getLicence().equals(currentUsername);
+        boolean isOwner = stall.getLicence().equals(currentUsername) && isStallAppRequest(currentUsername);
 
         if (isOwner) {
             return chatRepository.findByStall_IdAndCustomer_IdOrderByCreatedAtAsc(stallId, customerId)
@@ -161,7 +177,7 @@ public class ChatService {
         StallModel stall = stallRepository.findById(stallId)
                 .orElseThrow(() -> new BadrequestException("Stall not found", "STALL_NOT_FOUND"));
 
-        boolean isOwner = stall.getLicence().equals(currentUsername);
+        boolean isOwner = stall.getLicence().equals(currentUsername) && isStallAppRequest(currentUsername);
         List<ChatModel> unreadMessages;
 
         if (isOwner) {
@@ -199,7 +215,7 @@ public class ChatService {
         String currentUsername = currentUserLicence.getCurrentUserEmail();
         List<ChatThreadResponse> threads = new ArrayList<>();
 
-        boolean isStallOwner = stallRepository.findByLicence(currentUsername).isPresent();
+        boolean isStallOwner = isStallAppRequest(currentUsername);
 
         if (isStallOwner) {
             StallModel stall = stallRepository.findByLicence(currentUsername).get();
@@ -310,6 +326,14 @@ public class ChatService {
         return results;
     }
 
+    @Autowired
+    private org.springframework.messaging.simp.user.SimpUserRegistry simpUserRegistry;
+
+    public boolean checkIsOnlineRealtime(String email) {
+        org.springframework.messaging.simp.user.SimpUser user = simpUserRegistry.getUser(email);
+        return user != null && !user.getSessions().isEmpty();
+    }
+
     public Map<String, Object> getPresence(String type, Long id) {
         Map<String, Object> presence = new HashMap<>();
         presence.put("id", id);
@@ -319,34 +343,53 @@ public class ChatService {
 
         if ("STALL".equals(type)) {
             stallRepository.findById(id).ifPresent(stall -> {
-                presence.put("isOnline", stall.isOnline());
+                boolean isRealtimeOnline = checkIsOnlineRealtime(stall.getLicence());
+                presence.put("isOnline", isRealtimeOnline);
                 presence.put("lastSeenAt", stall.getLastSeenAt());
+                
+                if (stall.isOnline() != isRealtimeOnline) {
+                    stall.setOnline(isRealtimeOnline);
+                    stallRepository.save(stall);
+                }
             });
         } else {
             registerRepository.findById(id).ifPresent(user -> {
-                presence.put("isOnline", user.isOnline());
+                boolean isRealtimeOnline = checkIsOnlineRealtime(user.getEmail());
+                presence.put("isOnline", isRealtimeOnline);
                 presence.put("lastSeenAt", user.getLastSeenAt());
+                
+                if (user.isOnline() != isRealtimeOnline) {
+                    user.setOnline(isRealtimeOnline);
+                    registerRepository.save(user);
+                }
             });
         }
         return presence;
     }
 
     public void updatePresence(String email, boolean isOnline) {
+        boolean actuallyOnline = isOnline;
+        
+        // If the event says they went offline (e.g., closed a tab), 
+        // let's be SMART and check if they still have OTHER active tabs open!
+        if (!isOnline) {
+            actuallyOnline = checkIsOnlineRealtime(email);
+        }
+
         AuthModel user = registerRepository.findByEmail(email).orElse(null);
         if (user != null) {
-            user.setOnline(isOnline);
+            user.setOnline(actuallyOnline);
             user.setLastSeenAt(LocalDateTime.now());
             registerRepository.save(user);
-            broadcastStatus(user.getId(), "CLIENT", isOnline);
-            return;
+            broadcastStatus(user.getId(), "CLIENT", actuallyOnline);
         }
 
         StallModel stall = stallRepository.findByLicence(email).orElse(null);
         if (stall != null) {
-            stall.setOnline(isOnline);
+            stall.setOnline(actuallyOnline);
             stall.setLastSeenAt(LocalDateTime.now());
             stallRepository.save(stall);
-            broadcastStatus(stall.getId(), "STALL", isOnline);
+            broadcastStatus(stall.getId(), "STALL", actuallyOnline);
         }
     }
 
@@ -393,6 +436,45 @@ public class ChatService {
         }
 
         return response;
+    }
+
+    @Transactional
+    public void deleteConversation(Long stallId, Long customerId) {
+        String currentUsername = currentUserLicence.getCurrentUserEmail();
+        StallModel stall = stallRepository.findById(stallId)
+                .orElseThrow(() -> new BadrequestException("Stall not found", "STALL_NOT_FOUND"));
+        
+        boolean isStallOwner = stall.getLicence().equals(currentUsername) && isStallAppRequest(currentUsername);
+        Long finalCustomerId = customerId;
+        
+        if (!isStallOwner) {
+            AuthModel user = registerRepository.findByEmail(currentUsername)
+                    .orElseThrow(() -> new BadrequestException("User not found", "USER_NOT_FOUND"));
+            finalCustomerId = user.getId();
+        }
+
+        ConversationModel conversation = conversationRepository
+                .findByCustomer_IdAndStall_Id(finalCustomerId, stall.getId())
+                .orElseThrow(() -> new BadrequestException("Conversation not found", "CONVERSATION_NOT_FOUND"));
+
+        List<ChatModel> messages = chatRepository.findByStall_IdAndCustomer_IdOrderByCreatedAtAsc(stall.getId(), finalCustomerId);
+        
+        if (isStallOwner) {
+            messages.forEach(m -> m.setDeletedForStall(true));
+        } else {
+            messages.forEach(m -> m.setDeletedForCustomer(true));
+        }
+        chatRepository.saveAll(messages);
+
+        Map<String, Object> deleteEvent = new HashMap<>();
+        deleteEvent.put("type", "CONVERSATION_DELETED");
+        deleteEvent.put("stallId", stall.getId());
+        deleteEvent.put("customerId", finalCustomerId);
+        deleteEvent.put("deletedByStall", isStallOwner);
+        deleteEvent.put("conversationId", conversation.getConversationId());
+
+        messagingTemplate.convertAndSendToUser(conversation.getCustomer().getEmail(), "/queue/chat", deleteEvent);
+        messagingTemplate.convertAndSendToUser(stall.getLicence(), "/queue/chat", deleteEvent);
     }
 
     private ChatResponse mapToResponse(ChatModel chat) {
